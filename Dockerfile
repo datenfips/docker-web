@@ -1,18 +1,15 @@
+FROM debian:latest
+
 # File Author / Maintainer
 MAINTAINER Philipp Siegmund
 RUN echo 'Starting the default webdev box!'
 
-FROM debian:latest
-
-# Download and install php, nginx, and supervisor, hey, just linux for a change!
+# Install apache, PHP, and supplimentary programs. curl and lynx-cur are for debugging the container.
 RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install apache2 libapache2-mod-php5 php5-mysql php5-gd php-pear php-apc php5-curl curl lynx-cur
 
 # Shared volume
-RUN mkdir -p /var/www
 VOLUME ["/var/www"]
-
-# Install apache, PHP, and supplimentary programs. curl and lynx-cur are for debugging the container.
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install apache2 libapache2-mod-php5 php5-mysql php5-gd php-pear php-apc php5-curl curl lynx-cur
 
 # Enable apache mods.
 RUN a2enmod php5
@@ -29,9 +26,11 @@ ENV APACHE_LOG_DIR /var/log/apache2
 ENV APACHE_LOCK_DIR /var/lock/apache2
 ENV APACHE_PID_FILE /var/run/apache2.pid
 
+
 EXPOSE 80
 # Update the default apache site with the config we created.
 ADD conf/apache-config.conf /etc/apache2/sites-enabled/000-default.conf
+
 
 # By default, simply start apache.
 CMD /usr/sbin/apache2ctl -D FOREGROUND
